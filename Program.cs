@@ -11,7 +11,7 @@ internal class Program
     static void Main()
     {
         Log("Main method started.");
-        LaunchInBackgroundDesktop(@"C:\E\!\Desktop\Eppie.tpmPas.lnk", 1);
+        LaunchInBackgroundDesktop(@"C:\E\!\Desktop\not 4.txt", 1);
         Log("Main method finished.");
     }
 
