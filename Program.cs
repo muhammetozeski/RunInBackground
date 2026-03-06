@@ -20,7 +20,7 @@ internal class Program
     private const int SW_RESTORE = 9;
 
     [ComImport, Guid("6D5140C1-7436-11CE-8034-00AA006009FA"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IServiceProvider10
+    internal interface IServiceProvider10 
     {
         [return: MarshalAs(UnmanagedType.IUnknown)]
         object QueryService(ref Guid service, ref Guid riid);
