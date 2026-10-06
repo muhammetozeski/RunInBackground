@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RunInBackGround": {
+      "commandName": "Project",
+      "commandLineArgs": "\r\n"
+    }
+  }
+}

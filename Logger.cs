@@ -6,7 +6,7 @@ public static class Logger
     /// <summary> enable or disable logging by changing this </summary>
     private static int _activateLogging = 1; // Bool yerine int kullanıyoruz (0 false, 1 true)
 
-    public static bool ActivateLogging
+    public static bool ActivateLoggingToDisk
     {
         get => Interlocked.CompareExchange(ref _activateLogging, 0, 0) == 1;
         set => Interlocked.Exchange(ref _activateLogging, value ? 1 : 0);
@@ -32,7 +32,7 @@ public static class Logger
 
     static Logger()
     {
-        if (!ActivateLogging)
+        if (!ActivateLoggingToDisk)
             return;
 
         if (!string.IsNullOrWhiteSpace(LogsFolder))
@@ -83,7 +83,7 @@ public static class Logger
         [CallerLineNumber] int callerLine = 0, bool Run = true
         )
     {
-        if (!ActivateLogging)
+        if (!ActivateLoggingToDisk)
         {
             if (PrintToConsole)
             {
