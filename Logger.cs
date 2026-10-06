@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 namespace RunInBackGround;
 public static class Logger
@@ -17,8 +17,8 @@ public static class Logger
 
     public static readonly string startTime = DateTime.Now.ToString("yyyy.MM.dd HH.mm.ss.ff");
 
-    public const string LogsFolder = "Logs";
-    public const string LogFileNamePrefix = "RunAtStartup Log";
+    public static readonly string LogsFolder = Path.Combine(AppPaths.AppCache, "Logs");
+    public const string LogFileNamePrefix = "RunInBackground Log";
     public readonly static string LogFileName = LogsFolder + "\\" + LogFileNamePrefix + " " + startTime + ".txt";
 
     // enter -1 to disable
@@ -55,8 +55,19 @@ public static class Logger
         {
             foreach (var (Message, SyncEvent) in _logQueue.GetConsumingEnumerable())
             {
-                File.AppendAllText(LogFileName, Message + "\n");
-                SyncEvent?.Set();
+                try
+                {
+                    File.AppendAllText(LogFileName, Message + "\n");
+                }
+                catch (IOException error)
+                {
+                    Debug.WriteLine(error);
+                }
+                catch (UnauthorizedAccessException error)
+                {
+                    Debug.WriteLine(error);
+                }
+                finally { SyncEvent?.Set(); }
             }
         })
         { IsBackground = true }.Start();
@@ -75,12 +86,12 @@ public static class Logger
     /// <param name="callerFunction">Automatically captured name of the member calling the method via <see cref="CallerMemberNameAttribute"/>.</param>
     /// <param name="callerFilePath">Automatically captured full path of the source file via <see cref="CallerFilePathAttribute"/>.</param>
     /// <param name="callerLine">Automatically captured line number via <see cref="CallerLineNumberAttribute"/>.</param>
-    /// <param name="Run">A master switch to enable or disable the specific log call execution.</param>
+    /// <param name="isRun">A master switch to enable or disable the specific log call execution.</param>
     /// <returns>A string representation of the logged object, or null if <paramref name="MessageObject"/> is null.</returns>
-    public static string? Log(object? MessageObject, ConsoleColor? consoleColor = null, bool PrintToConsole = true, bool WriteToDisk = true, bool UseNewLine = true, bool WaitForLogging = false,
+    public static string? Log(object? MessageObject, ConsoleColor? consoleColor = null, bool PrintToConsole = false, bool WriteToDisk = true, bool UseNewLine = true, bool WaitForLogging = false,
         [CallerMemberName] string callerFunction = "",
         [CallerFilePath] string callerFilePath = "",
-        [CallerLineNumber] int callerLine = 0, bool Run = true
+        [CallerLineNumber] int callerLine = 0, bool isRun = true
         )
     {
         if (!ActivateLoggingToDisk)
@@ -100,7 +111,7 @@ public static class Logger
             return MessageObject?.ToString();
         }
 
-        if (!Run || (!PrintToConsole && !WriteToDisk)) return null;
+        if (!isRun || (!PrintToConsole && !WriteToDisk)) return null;
 
         string? returnValue = null;
 

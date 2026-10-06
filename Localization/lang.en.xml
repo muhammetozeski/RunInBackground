@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<strings>
+  <s name="Usage">Usage: RunInBackground.exe "program or file path" [desktop index]\nThe default target is the second desktop. The index is zero-based: 1 means the second desktop.</s>
+</strings>
