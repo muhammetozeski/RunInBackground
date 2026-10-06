@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,34 +8,52 @@ namespace RunInBackGround;
 
 internal class Program
 {
+    const bool IsLogEnabled = true;
+    /// <summary>Contains failures at the application boundary without opening a visible window.</summary>
+    /// <param name="arguments">Target path and optional zero-based desktop index.</param>
     [STAThread]
+    static void Main(string[] arguments)
+    {
+        var result = RunSafely(() =>
+        {
+            if (!ApplicationServices.Initialize().Succeeded)
+                throw new InvalidOperationException("Application initialization failed.");
+            Execute(arguments);
+        });
+        if (!result.Succeeded) Environment.ExitCode = 1;
+        RunSafely(() => Log("Application finished.", WaitForLogging: true, isRun: IsLogEnabled));
+    }
+
     /// <summary>
     /// This method validates arguments and launches the background desktop process if the path is valid.
     /// </summary>
     /// <param name="arguments">The array of strings containing the file or directory path and the desktop index.</param>
-    static void Main(string[] arguments)
+    static void Execute(string[] arguments)
     {
-        Log("Main method started.");
+        Log("Main method started.", isRun: IsLogEnabled);
 
-        if (arguments.Length != 2 )
+        if (arguments.Length is < 1 or > 2)
         {
-            Log("You need to enter only 2 parameter. We got " + arguments.Length + " parameters. See the second log for the parameters:");
+            Log(Localization.Strings.Usage, PrintToConsole: true);
             Log(arguments);
+            Environment.ExitCode = 2;
             return;
         }
 
         string targetPath = arguments[0];
-        string desktopInput = arguments[1];
+        string desktopInput = arguments.Length == 2 ? arguments[1] : (Settings.DesktopNumber.Value - 1).ToString();
 
         if (string.IsNullOrWhiteSpace(targetPath) || !Path.Exists(targetPath))
         {
             Log($"The path was not found or is invalid: {targetPath}");
+            Environment.ExitCode = 2;
             return;
         }
 
-        if (!int.TryParse(desktopInput, out int desktopIndex))
+        if (!int.TryParse(desktopInput, out int desktopIndex) || desktopIndex < 0 || desktopIndex > 19)
         {
             Log($"The input '{desktopInput}' is not a valid integer.");
+            Environment.ExitCode = 2;
             return;
         }
 
